@@ -3,39 +3,39 @@
     "type": "dynamic",
     "description": "Single block",
     "shape": [
-        { "x": -14, "y": -259 },
-        { "x": 14, "y": -259 },
-        { "x": 14, "y": -231},
-        { "x": -14, "y": -231 }
+        { "x": -9, "y": -155 },
+        { "x": 9, "y": -155 },
+        { "x": 9, "y": -137 },
+        { "x": -9, "y": -137 }
     ],
     "friction": {
       "collision": 0,
       "linear": 0,
-      "rotational": 0
+      "rotational": 10
     },
     "sensors": [
     { 
         "type": "range",
-        "location": { "x": 14, "y": -245 },
+        "location": { "x": 10, "y": -146 },
         "direction": 0
     },
     { 
         "type": "range",
-        "location": { "x": 0, "y": -231 },
+        "location": { "x": 0, "y": -156 },
         "direction": 1.57
     }, 
     { 
         "type": "range",
-        "location": { "x": -14, "y": -245 },
+        "location": { "x": -10, "y": -146 },
         "direction": 3.14
     },
     { 
         "type": "range",
-        "location": { "x": 0, "y": -259 },
+        "location": { "x": 0, "y": -136 },
         "direction": -1.57
     }
     
     ],
-    "mass": 1,    
+    "mass": 10,    
     "controller": "lib/block.so"
 }

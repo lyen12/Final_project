@@ -16,7 +16,6 @@ class blockController : public Process, public AgentInterface {
 
     private:
     double goal_x, goal_y;
-    double rotate;
     bool on_bottom_piece; 
     bool new_agent;
     const json BLOCK_STYLE = { 
@@ -24,7 +23,6 @@ class blockController : public Process, public AgentInterface {
                    {"stroke", "black"}, 
                }; 
 };
-
 
 class block : public Agent {
     public:

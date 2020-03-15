@@ -2,86 +2,93 @@
 #include <stdlib.h>
 #include <math.h>
 #include "block.h"
-#define block_width 28
+#define MOVE_OVER 21
+#define BLOCK_WIDTH 20
+#define SPACE_BETWEEN_BLOCK 1
 
 using namespace enviro;
 using namespace std;
 
 // Put your implementations here
+//! Controlling_id is a global variable to isolate key event controls to a specific agent
+int controlling_id;
 
-blockController::blockController() : Process(), AgentInterface(), on_bottom_piece(false), rotate(0), new_agent(false) {}
+blockController::blockController() : Process(), AgentInterface(), on_bottom_piece(false), new_agent(false) {}
 
 void blockController::init() {
-    //! Watch for specific a,s,d,w key operations
 
+    //! Watch for specific keyboard operations
 	watch("keydown", [&](Event &e) {
+        cout << "blockController.id() = " << id() << endl;
+        cout << "controlling_id = " << controlling_id << endl;
+        
+        if (controlling_id == id()) {
+            cout << id() << " == " << controlling_id << endl; 
+
             auto k = e.value()["key"].get<std::string>();
             //! Sends a Move left signal to the block when 'a' is pressed
             if ( k == "a" && !on_bottom_piece) {
-                emit(Event("move_left", { 
-    			}));             
+                cout << "id " << id() << " Before move Left Sensor_value(2) is " << sensor_value(2) << "\n";
+
+                if ( sensor_value(2) >= (MOVE_OVER + SPACE_BETWEEN_BLOCK) ) {
+                    emit(Event("move_left", {{ "id", id() }}));    
+                }         
             //! Sends a Move right signal to the block when 'd' is pressed
             } else if ( k == "d" && !on_bottom_piece) {
-                emit(Event("move_right", {
-    			})); 
-            } else if ( k == "w" && !on_bottom_piece) {
-                emit(Event("rotate", {
-                }));       
-            //! Sends a move down faster signal to the block when 's' is pressed
-            } else if ( k == "s" && !on_bottom_piece) {
-                emit(Event("move_down_faster", {
-                })); 
+                cout << "id " << id() << " Before move Right Sensor_value(0) is " << sensor_value(0) << "\n";
+
+                if ( sensor_value(0) >= (MOVE_OVER + SPACE_BETWEEN_BLOCK) ) {
+                    emit(Event("move_right", {{ "id", id() }})); 
+                }
             } 
-        
+        } else { 
+            // cout << id() << " doing nothing because I am not in control." << endl;
+        }
     });        
     //! On move_left signal, block will move left 
     watch("move_left", [this](Event e) {
-        if ( sensor_value(2) > 2 ) {
-            goal_x = position().x - block_width;
+        if ( id() == e.value()["id"] ) {
+            goal_x = position().x - MOVE_OVER;
         } 
-        cout << "goal_x is " << goal_x <<"\n";
-        cout << "Sensor_value(2) is " << sensor_value(2) << "\n";
+        //cout << "goal_x is " << goal_x <<"\n";
     });
 
     watch("move_right", [this](Event e) {
-        if ( sensor_value(0) > 2 ) {
-            goal_x = position().x + block_width;
+        if ( id() == e.value()["id"] ) {
+            goal_x = position().x + MOVE_OVER;
         }
-        cout << "goal_x is " << goal_x <<"\n";
-        cout << "Sensor_value(0) is " << sensor_value(0) << "\n";
-
+        //cout << "goal_x is " << goal_x <<"\n";
     }); 
 
-    // watch("move_down_faster", [this](Event e) {
-    //     if ( grid_bottom_edge - ( position().y + block_width/2 ) >= block_width ){
-    //         goal_y = position().y + block_width;
-    //     } 
-    //     cout << "goal_y is " << goal_y << "\n";
-    // }); 
-    
     watch("move_down", [this](Event e) {
-        if ( sensor_value(1) > 2 ){
-            goal_y = position().y + 10;
-        } 
-        // cout << "Sensor_value(1) is " << sensor_value(1) << "\n";
+        if ( id() == e.value()["id"] ) {
+            goal_y = position().y + MOVE_OVER; 
+        }
+        cout << "id " << id() << " Sensor_value(1) is " << sensor_value(1) << "\n";
+
     }); 
 
-    watch("rotate", [this](Event e) {
-        rotate = rotate + M_PI/2;
-    }); 
 }
 
-void blockController::start() {}
+void blockController::start() {
+    controlling_id = id();
+    // cout << "set controlling id to " << controlling_id << "\n";
+
+}
 void blockController::update() {
-    if ( sensor_value(1) > 2 ){
-        emit(Event("move_down", {}));
+    if ( sensor_value(1) >= (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
+        emit(Event("move_down", {{ "id", id() }}));
     } else {
         on_bottom_piece = true;
     }
-	teleport(goal_x, goal_y, rotate);
-    // if (on_bottom_piece == true && new_agent == false) {
-    //     Agent& block = add_agent("block", 0, -245, 0, BLOCK_STYLE);
-    //     new_agent = true;
-    // }
+    cout << "id " << id() << " Before teleport ( " << position().x << " , " << position().y << " )" << "\n";
+
+	teleport(goal_x, goal_y, 0);
+    cout << "id " << id() << " After teleport ( " << position().x << " , " << position().y << " )" << "\n";
+
+    if (on_bottom_piece == true && new_agent == false) {
+        add_agent("block", 0, 0, 0, BLOCK_STYLE);
+        new_agent = true;
+    }
 }
 void blockController::stop() {}
