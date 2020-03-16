@@ -18,6 +18,9 @@ class blockController : public Process, public AgentInterface {
     double goal_x, goal_y;
     bool on_bottom_piece; 
     bool new_agent;
+    bool moving_right;
+    bool moving_left;
+    bool drop;
     const json BLOCK_STYLE = { 
                    {"fill", "gray"}, 
                    {"stroke", "black"}, 

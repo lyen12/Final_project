@@ -18,32 +18,35 @@ blockController::blockController() : Process(), AgentInterface(), on_bottom_piec
 void blockController::init() {
 
     //! Watch for specific keyboard operations
-	watch("keydown", [&](Event &e) {
-        cout << "blockController.id() = " << id() << endl;
-        cout << "controlling_id = " << controlling_id << endl;
+    watch("keydown", [&](Event &e) {
+        // cout << "blockController.id() = " << id() << endl;
+        // cout << "controlling_id = " << controlling_id << endl;
         
         if (controlling_id == id()) {
             cout << id() << " == " << controlling_id << endl; 
 
             auto k = e.value()["key"].get<std::string>();
-            //! Sends a Move left signal to the block when 'a' is pressed
-            if ( k == "a" && !on_bottom_piece) {
-                cout << "id " << id() << " Before move Left Sensor_value(2) is " << sensor_value(2) << "\n";
+            // //! Sends a Move left signal to the block when 'a' is pressed
+            // if ( k == "a" && !on_bottom_piece) {
+            // // cout << "id " << id() << " Before move Left Sensor_value(2) is " << sensor_value(2) << "\n";
 
-                if ( sensor_value(2) >= (MOVE_OVER + SPACE_BETWEEN_BLOCK) ) {
-                    emit(Event("move_left", {{ "id", id() }}));    
-                }         
-            //! Sends a Move right signal to the block when 'd' is pressed
-            } else if ( k == "d" && !on_bottom_piece) {
-                cout << "id " << id() << " Before move Right Sensor_value(0) is " << sensor_value(0) << "\n";
+            //     if ( sensor_value(2) >= (MOVE_OVER + SPACE_BETWEEN_BLOCK) ) {
+            //         emit(Event("move_left", {{ "id", id() }}));    
+            //     }         
+            // //! Sends a Move right signal to the block when 'd' is pressed
+            // } else if ( k == "d" && !on_bottom_piece) {
+            //     // cout << "id " << id() << " Before move Right Sensor_value(0) is " << sensor_value(0) << "\n";
 
-                if ( sensor_value(0) >= (MOVE_OVER + SPACE_BETWEEN_BLOCK) ) {
-                    emit(Event("move_right", {{ "id", id() }})); 
-                }
+            //     if ( sensor_value(0) >= (MOVE_OVER + SPACE_BETWEEN_BLOCK) ) {
+            //         emit(Event("move_right", {{ "id", id() }})); 
+            //     }
+            // }
+            if ( k == " " && !on_bottom_piece) {
+                // cout << "id " << id() << " Before move Right Sensor_value(0) is " << sensor_value(0) << "\n";
+                drop = true; 
             } 
-        } else { 
-            // cout << id() << " doing nothing because I am not in control." << endl;
-        }
+
+        } 
     });        
     //! On move_left signal, block will move left 
     watch("move_left", [this](Event e) {
@@ -64,7 +67,7 @@ void blockController::init() {
         if ( id() == e.value()["id"] ) {
             goal_y = position().y + MOVE_OVER; 
         }
-        cout << "id " << id() << " Sensor_value(1) is " << sensor_value(1) << "\n";
+        // cout << "id " << id() << " Sensor_value(1) is " << sensor_value(1) << "\n";
 
     }); 
 
@@ -72,23 +75,65 @@ void blockController::init() {
 
 void blockController::start() {
     controlling_id = id();
+    emit(Event("move_right", {{ "id", id() }}));
+    moving_right = true;
+    moving_left = false;
+    drop = false;
+
     // cout << "set controlling id to " << controlling_id << "\n";
 
 }
 void blockController::update() {
-    if ( sensor_value(1) >= (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
-        emit(Event("move_down", {{ "id", id() }}));
-    } else {
-        on_bottom_piece = true;
+    // if ( sensor_value(1) >= (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
+    //     emit(Event("move_down", {{ "id", id() }}));
+    // } else {
+    //     on_bottom_piece = true;
+    // }
+    // cout << "id " << id() << " Before teleport ( " << position().x << " , " << position().y << " )" << "\n";
+    if( moving_right == true && drop == false) {
+        if ( sensor_value(0) >= (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
+            emit(Event("move_right", {{ "id", id() }}));
+            if ( sensor_value(1) < (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
+                on_bottom_piece = true;
+            }
+        } 
+        else if ( sensor_value(0) < (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
+            moving_left = true;
+            moving_right = false;
+        }
     }
-    cout << "id " << id() << " Before teleport ( " << position().x << " , " << position().y << " )" << "\n";
-
-	teleport(goal_x, goal_y, 0);
-    cout << "id " << id() << " After teleport ( " << position().x << " , " << position().y << " )" << "\n";
+    
+    if (moving_left == true && drop == false) {
+        if ( sensor_value(2) >= (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
+            emit(Event("move_left", {{ "id", id() }}));
+            if ( sensor_value(1) < (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
+                on_bottom_piece = true;
+            }
+        }
+        else if ( sensor_value(2) < (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
+            moving_left = false;
+            moving_right = true;
+        }
+    }
+    if (drop == true) {
+        if ( sensor_value(1) >= (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
+            emit(Event("move_down", {{ "id", id() }}));
+        }
+        else if (sensor_value(1) < (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ) { 
+            on_bottom_piece = true;
+        }
+    }
+    // if ( sensor_value(1) < (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
+    //     on_bottom_piece = true;
+    // }
+    teleport(goal_x, goal_y, 0);
+    // cout << "id " << id() << " After teleport ( " << position().x << " , " << position().y << " )" << "\n";
 
     if (on_bottom_piece == true && new_agent == false) {
         add_agent("block", 0, 0, 0, BLOCK_STYLE);
         new_agent = true;
     }
+
 }
 void blockController::stop() {}
+
