@@ -1,7 +1,7 @@
 {
     "name": "block",
     "type": "dynamic",
-    "description": "Single block",
+    "description": "Block",
     "shape": [
         { "x": -9, "y": -155 },
         { "x": 9, "y": -155 },
@@ -9,33 +9,11 @@
         { "x": -9, "y": -137 }
     ],
     "friction": {
-      "collision": 0,
-      "linear": 0,
-      "rotational": 10
+      "collision": 5,
+      "linear": 1,
+      "rotational": 5
     },
-    "sensors": [
-    { 
-        "type": "range",
-        "location": { "x": 10, "y": -146 },
-        "direction": 0
-    },
-    { 
-        "type": "range",
-        "location": { "x": 0, "y": -156 },
-        "direction": 1.57
-    }, 
-    { 
-        "type": "range",
-        "location": { "x": -10, "y": -146 },
-        "direction": 3.14
-    },
-    { 
-        "type": "range",
-        "location": { "x": 0, "y": -136 },
-        "direction": -1.57
-    }
-    
-    ],
-    "mass": 10,    
+    "sensors": [],
+    "mass": 1,    
     "controller": "lib/block.so"
 }

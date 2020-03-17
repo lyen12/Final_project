@@ -1,10 +1,9 @@
 #include <iostream>
 #include <stdlib.h>
-#include <math.h>
+#include <vector>
 #include "block.h"
-#define MOVE_OVER 21
-#define BLOCK_WIDTH 20
-#define SPACE_BETWEEN_BLOCK 1
+#define LEVEL_DIFFICULTY 500
+#define WIN_LINE 65
 
 using namespace enviro;
 using namespace std;
@@ -13,127 +12,106 @@ using namespace std;
 //! Controlling_id is a global variable to isolate key event controls to a specific agent
 int controlling_id;
 
-blockController::blockController() : Process(), AgentInterface(), on_bottom_piece(false), new_agent(false) {}
+blockController::blockController() : Process(), AgentInterface() {}
 
 void blockController::init() {
 
-    //! Watch for specific keyboard operations
     watch("keydown", [&](Event &e) {
-        // cout << "blockController.id() = " << id() << endl;
-        // cout << "controlling_id = " << controlling_id << endl;
-        
+        //! This checks to make sure the Player only controls the most recently added block.
         if (controlling_id == id()) {
-            cout << id() << " == " << controlling_id << endl; 
-
+            //! Set k to the specific key being pressed.
             auto k = e.value()["key"].get<std::string>();
-            // //! Sends a Move left signal to the block when 'a' is pressed
-            // if ( k == "a" && !on_bottom_piece) {
-            // // cout << "id " << id() << " Before move Left Sensor_value(2) is " << sensor_value(2) << "\n";
-
-            //     if ( sensor_value(2) >= (MOVE_OVER + SPACE_BETWEEN_BLOCK) ) {
-            //         emit(Event("move_left", {{ "id", id() }}));    
-            //     }         
-            // //! Sends a Move right signal to the block when 'd' is pressed
-            // } else if ( k == "d" && !on_bottom_piece) {
-            //     // cout << "id " << id() << " Before move Right Sensor_value(0) is " << sensor_value(0) << "\n";
-
-            //     if ( sensor_value(0) >= (MOVE_OVER + SPACE_BETWEEN_BLOCK) ) {
-            //         emit(Event("move_right", {{ "id", id() }})); 
-            //     }
-            // }
-            if ( k == " " && !on_bottom_piece) {
-                // cout << "id " << id() << " Before move Right Sensor_value(0) is " << sensor_value(0) << "\n";
+            //! If spacebar is pressed, drop the block straight to the bottom.
+            if ( k == " " && !drop && !win) {
+                //! send drop signal in addition to the block id and it's 
+                //! position the moment the spacebar is pressed.
+                emit(Event("drop", {
+                    { "id", id() },
+                    { "x", position().x }, 
+                    { "y", position().y } 
+                }));
                 drop = true; 
             } 
-
         } 
     });        
-    //! On move_left signal, block will move left 
-    watch("move_left", [this](Event e) {
-        if ( id() == e.value()["id"] ) {
-            goal_x = position().x - MOVE_OVER;
-        } 
-        //cout << "goal_x is " << goal_x <<"\n";
-    });
-
+    //! move block right
     watch("move_right", [this](Event e) {
         if ( id() == e.value()["id"] ) {
-            goal_x = position().x + MOVE_OVER;
+            v = -v;
         }
-        //cout << "goal_x is " << goal_x <<"\n";
     }); 
-
-    watch("move_down", [this](Event e) {
+    //! move block left
+    watch("move_left", [this](Event e) {
         if ( id() == e.value()["id"] ) {
-            goal_y = position().y + MOVE_OVER; 
+            v = -v; 
         }
-        // cout << "id " << id() << " Sensor_value(1) is " << sensor_value(1) << "\n";
-
     }); 
-
+    //! set drop state to true and capture position 
+    watch("drop", [this](Event e) {
+        if ( id() == e.value()["id"] ) {
+            drop = true;
+            goal_x = e.value()["x"];
+            goal_y = e.value()["y"]; 
+        }
+    }); 
+    //! if block collides with left bumper, move right
+    notice_collisions_with("bumper", [&](Event &e) {
+        if ( !drop  ) {
+          emit(Event("move_right", {{ "id", id() }}));
+        }
+    }); 
+    //!  if block colllides with right bumper, move left   
+    notice_collisions_with("bumper2", [&](Event &e) {
+        if ( !drop ) {
+          emit(Event("move_left", {{ "id", id() }}));
+        }
+    }); 
 }
 
 void blockController::start() {
+    //! capture most recently added block id
     controlling_id = id();
-    emit(Event("move_right", {{ "id", id() }}));
-    moving_right = true;
-    moving_left = false;
+
+    //! speed will make the level more difficult
+    v = LEVEL_DIFFICULTY;
+
+    //! Initialize conditions
+    stop_block = false;
     drop = false;
+    win = false;
+    count = 0;
 
-    // cout << "set controlling id to " << controlling_id << "\n";
-
+    //! send block id over to win_message to be stored.
+    emit(Event("adding_agent", {{ "id", id() }}));
 }
+
 void blockController::update() {
-    // if ( sensor_value(1) >= (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
-    //     emit(Event("move_down", {{ "id", id() }}));
-    // } else {
-    //     on_bottom_piece = true;
-    // }
-    // cout << "id " << id() << " Before teleport ( " << position().x << " , " << position().y << " )" << "\n";
-    if( moving_right == true && drop == false) {
-        if ( sensor_value(0) >= (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
-            emit(Event("move_right", {{ "id", id() }}));
-            if ( sensor_value(1) < (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
-                on_bottom_piece = true;
+    if (!drop && !win) {
+        prevent_rotation();
+        apply_force(v,0);
+        // goal_x = position().x;
+        // goal_y = position().y;
+    } else if (drop && !win) {
+        prevent_rotation();
+        if (!stop_block) {
+            teleport(goal_x, goal_y, 0);
+            stop_block = true;
+        }
+        count++;
+        omni_apply_force(0,1500);
+        if (count == 15) {
+            add_agent("block", 0, 0, 0, BLOCK_STYLE);
+            cout << "id " << id() << " y position  after dropping is " << position().y << "\n";
+        
+            if (position().y < WIN_LINE ) {
+                emit(Event("win"));
+                win = true;
+                cout << "win state is " << win << "\n";
             }
-        } 
-        else if ( sensor_value(0) < (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
-            moving_left = true;
-            moving_right = false;
         }
     }
     
-    if (moving_left == true && drop == false) {
-        if ( sensor_value(2) >= (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
-            emit(Event("move_left", {{ "id", id() }}));
-            if ( sensor_value(1) < (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
-                on_bottom_piece = true;
-            }
-        }
-        else if ( sensor_value(2) < (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
-            moving_left = false;
-            moving_right = true;
-        }
-    }
-    if (drop == true) {
-        if ( sensor_value(1) >= (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
-            emit(Event("move_down", {{ "id", id() }}));
-        }
-        else if (sensor_value(1) < (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ) { 
-            on_bottom_piece = true;
-        }
-    }
-    // if ( sensor_value(1) < (MOVE_OVER + SPACE_BETWEEN_BLOCK) && !on_bottom_piece ){
-    //     on_bottom_piece = true;
-    // }
-    teleport(goal_x, goal_y, 0);
-    // cout << "id " << id() << " After teleport ( " << position().x << " , " << position().y << " )" << "\n";
-
-    if (on_bottom_piece == true && new_agent == false) {
-        add_agent("block", 0, 0, 0, BLOCK_STYLE);
-        new_agent = true;
-    }
-
+    
 }
 void blockController::stop() {}
 

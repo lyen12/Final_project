@@ -1,13 +1,42 @@
 {
 
-    "name": "My Enviro Project",
+    "name": "Stack the blocks! Use the spacebar to drop the block. Try to get to the red line!",
     "ip": "0.0.0.0",
     "port": 8765,
-
-    "agents": [    
+    "buttons": [
+        {
+            "name": "Reset",
+            "label": "Reset",
+            "style": { "background": "Green", "borderColor": "black" }
+        }
+    ],
+    "agents": [   
+        {
+            "definition": "defs/win_message.json",
+            "style": { "fill": "pink", "stroke": "black" },
+            "position": { "x": 0, "y": -90, "theta": 0 }
+        },
         {
             "definition": "defs/block.json",
-            "style": { "fill": "gray", "stroke": "black" },
+            "style": { "fill": "black", "stroke": "black" },
+            "position": {
+                "x": 0, 
+                "y": 0, 
+                "theta": 0
+            }
+        },
+        {
+            "definition": "defs/bumper.json",
+            "style": { "fill": "red", "stroke": "none" },
+            "position": {
+                "x": 0, 
+                "y": 0, 
+                "theta": 0
+            }
+        },
+        {
+            "definition": "defs/bumper2.json",
+            "style": { "fill": "red", "stroke": "none" },
             "position": {
                 "x": 0, 
                 "y": 0, 
@@ -16,24 +45,6 @@
         }
     ],
     "statics": [
-        {
-            "style": { "fill": "gray", "stroke": "none" },
-            "shape": [
-                { "x": -106, "y": -170 },
-                { "x": -106,  "y": 170 },
-                { "x": -96,  "y": 170 },
-                { "x": -96, "y": -170 }
-            ]
-        },
-        {
-            "style": { "fill": "gray", "stroke": "none" },
-            "shape": [
-                { "x": 106, "y": -170 },
-                { "x": 106,  "y": 170 },
-                { "x": 96,  "y": 170 },
-                { "x": 96, "y": -170 }
-            ]
-        },
         {
             "style": { "fill": "gray", "stroke": "none" },
             "shape": [
