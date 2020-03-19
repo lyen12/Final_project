@@ -37,12 +37,14 @@ void blockController::init() {
     //! move block right
     watch("move_right", [this](Event e) {
         if ( id() == e.value()["id"] ) {
+            //! Change direction
             v = -v;
         }
     }); 
     //! move block left
     watch("move_left", [this](Event e) {
         if ( id() == e.value()["id"] ) {
+            //! Change direction
             v = -v; 
         }
     }); 
@@ -86,6 +88,7 @@ void blockController::start() {
 }
 
 void blockController::update() {
+    //! Allow the block to bounce left and right 
     if (!drop && !win) {
         prevent_rotation();
         apply_force(v,0);
@@ -106,6 +109,7 @@ void blockController::update() {
             if (position().y < WIN_LINE ) {
                 emit(Event("win"));
                 win = true;
+                omni_apply_force(0,1500);
                 cout << "win state is " << win << "\n";
             }
         }
