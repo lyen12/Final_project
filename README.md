@@ -21,9 +21,8 @@ Key Challenges
   used the Teleport method to stop the block and place it at the position the block was at when the spacebar was pressed.
 - Add a block after the block touches the bottom. To address this, I added a counter to give some time for the block to fall to the bottom 
   before the next block appears.
-- Removing all agents after the Reset button is pressed. To do this, I captured every existing agent id into a vector by sending the id as an 
-  event and watching for the event in win_message.cc. Then win_message.cc watches for the Reset event and removes every agent id stored in the 
-  existing_agents vector.
+- Decluttering code. Originally I had a bunch of if-else statements, but I realized since update() is one big loop, I put my changes I wanted in 
+  logical sequence. Anytime a condition is not met, I would return to prevent going to the next action. 
 
 Set Up Instructions
 ===
@@ -33,7 +32,7 @@ Set Up Instructions
 -Start a Docker container with ENVIRO pre-loaded into it by running:
 
 ```bash
-docker run -p80:80 -p8765:8765 -v $PWD:/source -it klavins/enviro:alpha bash
+docker run -p80:80 -p8765:8765 -v $PWD:/source -it klavins/enviro:v1.5 bash
 esm start
 ```
 

@@ -9,8 +9,8 @@
         { "x": -9, "y": -137 }
     ],
     "friction": {
-      "collision": 5,
-      "linear": 1,
+      "collision": 0,
+      "linear": 3,
       "rotational": 5
     },
     "sensors": [],

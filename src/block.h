@@ -15,6 +15,7 @@ class blockController : public Process, public AgentInterface {
     void start();
     void update();
     void stop();
+    void giveControl();
 
     private:
     
@@ -25,19 +26,19 @@ class blockController : public Process, public AgentInterface {
     //! just created.
     bool new_agent;
 
-    //! drop is a boolean variable to determine if the block is called to
-    //! drop by the Player.
     int count;
+  
     bool drop;
     bool win;
+    bool added_next_agent;
     bool moving_left;
     bool moving_right;
     bool stop_block;
-    double v = 0;
+    double v;
 
     //! Styling for the added block.
     const json BLOCK_STYLE = { 
-                   {"fill", "gray"}, 
+                   {"fill", "black"}, 
                    {"stroke", "black"}, 
     }; 
 

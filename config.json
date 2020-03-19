@@ -3,13 +3,6 @@
     "name": "Stack the blocks! Use the spacebar to drop the block. Try to get to the red line!",
     "ip": "0.0.0.0",
     "port": 8765,
-    "buttons": [
-        {
-            "name": "Reset",
-            "label": "Reset",
-            "style": { "background": "Green", "borderColor": "black" }
-        }
-    ],
     "agents": [   
         {
             "definition": "defs/win_message.json",

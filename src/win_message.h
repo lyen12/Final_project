@@ -15,15 +15,7 @@ class win_messageController : public Process, public AgentInterface {
     void stop();
 
     private:
-    //! existing_agents will hold the ids of every block added.
-    vector<int> existing_agents;
-    int controlling_id;
-    bool win = false;
-    //! Styling for the added block.
-    const json BLOCK_STYLE = { 
-                   {"fill", "gray"}, 
-                   {"stroke", "black"}, 
-    }; 
+   
 };
 
 class win_message : public Agent {

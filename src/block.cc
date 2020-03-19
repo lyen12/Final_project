@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <vector>
 #include "block.h"
-#define LEVEL_DIFFICULTY 500
-#define WIN_LINE 65
+#define LEVEL_DIFFICULTY 700
+#define WIN_LINE 70
 
 using namespace enviro;
 using namespace std;
@@ -15,6 +15,7 @@ int controlling_id;
 blockController::blockController() : Process(), AgentInterface() {}
 
 void blockController::init() {
+    cout << "Running blockController::init()" << endl;
 
     watch("keydown", [&](Event &e) {
         //! This checks to make sure the Player only controls the most recently added block.
@@ -22,7 +23,7 @@ void blockController::init() {
             //! Set k to the specific key being pressed.
             auto k = e.value()["key"].get<std::string>();
             //! If spacebar is pressed, drop the block straight to the bottom.
-            if ( k == " " && !drop && !win) {
+            if ( k == " " && !drop ) {
                 //! send drop signal in addition to the block id and it's 
                 //! position the moment the spacebar is pressed.
                 emit(Event("drop", {
@@ -30,7 +31,6 @@ void blockController::init() {
                     { "x", position().x }, 
                     { "y", position().y } 
                 }));
-                drop = true; 
             } 
         } 
     });        
@@ -68,11 +68,6 @@ void blockController::init() {
           emit(Event("move_left", {{ "id", id() }}));
         }
     }); 
-}
-
-void blockController::start() {
-    //! capture most recently added block id
-    controlling_id = id();
 
     //! speed will make the level more difficult
     v = LEVEL_DIFFICULTY;
@@ -81,50 +76,65 @@ void blockController::start() {
     stop_block = false;
     drop = false;
     win = false;
+    added_next_agent = false;
     count = 0;
 
-    //! send block id over to win_message to be stored.
-    emit(Event("adding_agent", {{ "id", id() }}));
+    //! Prevents the block from spinning
+    prevent_rotation();
 }
+
+void blockController::start() {}
 
 void blockController::update() {
     //! Allow the block to bounce left and right 
-    if (!drop && !win) {
-        prevent_rotation();
+    if (!drop) {
+        giveControl();
         apply_force(v,0);
-        // goal_x = position().x;
-        // goal_y = position().y;
-    } 
-    //! Block will drop to the bottom when spacebar is pressed (sets drop to true)
-    else if (drop && !win) {
-        //! Prevents the block from spinning
-        prevent_rotation();
-        //! Stops the block where the spacebar was pressed.
-        if (!stop_block) {
-            teleport(goal_x, goal_y, 0);
-            stop_block = true;
-        }
-        //! Count is for giving time for the block to drop to the bottom.
-        count++;
-        //! Apply a downward force on the block.
-        omni_apply_force(0,1500);
-        
-        if (count == 15) {
-            //! Once block hits the ground, add a new block.
-            add_agent("block", 0, 0, 0, BLOCK_STYLE);
-            //cout << "id " << id() << " y position  after dropping is " << position().y << "\n";
-            
-            //! If the block's position reaches the Win line, a win event will be emitted to win_message.cc.
-            if (position().y < WIN_LINE ) {
-                emit(Event("win"));
-                win = true;
-                omni_apply_force(0,1500);
-                cout << "win state is " << win << "\n";
-            }
-        }
+        return;
     }
-    
-    
+
+    //! Apply a downward force on the block.
+    omni_apply_force(0,1000);
+
+    //! Block will drop to the bottom when spacebar is pressed (sets drop to true)
+    //! Stops the block where the spacebar was pressed.
+    if (!stop_block) {
+        teleport(goal_x, goal_y, 0);
+        stop_block = true;
+    }
+
+    //! Count is for giving time for the block to drop to the bottom.
+    //cout << "Current count for " << id() << " is " << count << endl;
+    if (count++ < 15) return;
+
+    //! If the block's position reaches the Win line, a win event will be emitted to win_message.cc.
+    if ( position().y < WIN_LINE && !win ) {
+        emit(Event("win"));
+        win = true;
+    }
+
+    //! If win is true, return.
+    if (win) return;
+
+    //! If win is not true and drop is true, add another agent. 
+    if (!added_next_agent) {
+        //! Once block hits the ground, add a new block.
+        Agent& a = add_agent("block", 0, 0, 0, BLOCK_STYLE);
+
+        //! Capture new agent's id
+        controlling_id = a.get_id();
+        
+        added_next_agent = true;
+        return;
+        //cout << "id " << id() << " y position  after dropping is " << position().y << "\n";
+    }
+
 }
+
+//! Makes sure most current block is the one in control.
+void blockController::giveControl() {
+    controlling_id = id();
+}
+
 void blockController::stop() {}
 
