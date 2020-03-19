@@ -46,9 +46,7 @@ The above commands do the following:
 Name   | TCP | Host IP   | Host Port| Guest IP       | Guest Port |
 -------|-----|-----------|----------|----------------|------------|
 Rule 1 | TCP | 0.0.0.0   | 80       | 192.168.99.100 | 80         |
--------|-----|-----------|----------|----------------|------------|
 Rule 2 | TCP | 0.0.0.0   | 8765     |                | 8765       |
--------|-----|-----------|----------|----------------|------------|
 Rule 3 | TCP | 127.0.0.1 | 51058    |                | 22         |
 
 - The `-p8765:8765` option allows the ENVIRO client to communicate with the `enviro` server (not yet running) via a *WebSocket*.
