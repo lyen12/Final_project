@@ -94,18 +94,27 @@ void blockController::update() {
         apply_force(v,0);
         // goal_x = position().x;
         // goal_y = position().y;
-    } else if (drop && !win) {
+    } 
+    //! Block will drop to the bottom when spacebar is pressed (sets drop to true)
+    else if (drop && !win) {
+        //! Prevents the block from spinning
         prevent_rotation();
+        //! Stops the block where the spacebar was pressed.
         if (!stop_block) {
             teleport(goal_x, goal_y, 0);
             stop_block = true;
         }
+        //! Count is for giving time for the block to drop to the bottom.
         count++;
+        //! Apply a downward force on the block.
         omni_apply_force(0,1500);
-        if (count == 15) {
-            add_agent("block", 0, 0, 0, BLOCK_STYLE);
-            cout << "id " << id() << " y position  after dropping is " << position().y << "\n";
         
+        if (count == 15) {
+            //! Once block hits the ground, add a new block.
+            add_agent("block", 0, 0, 0, BLOCK_STYLE);
+            //cout << "id " << id() << " y position  after dropping is " << position().y << "\n";
+            
+            //! If the block's position reaches the Win line, a win event will be emitted to win_message.cc.
             if (position().y < WIN_LINE ) {
                 emit(Event("win"));
                 win = true;
