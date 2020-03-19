@@ -26,8 +26,6 @@ Key Challenges
 
 Set Up Instructions
 ===
-- Clone this repository:
-`https://github.com/lyen12/Final_project.git
 
 -Start a Docker container with ENVIRO pre-loaded into it by running:
 
@@ -51,6 +49,12 @@ Rule 3 | TCP | 127.0.0.1 | 51058    |                | 22         |
 - The `-p8765:8765` option allows the ENVIRO client to communicate with the `enviro` server (not yet running) via a *WebSocket*.
 
 - The command `esm start` uses the <u>e</u>nviro <u>s</u>etup <u>m</u>anager to start a web server from which your browser can access the ENVRIO client. 
+
+- Clone this repository:
+`https://github.com/lyen12/Final_project.git
+
+- Go into the Final Project Directory:
+`cd Final_project
 
 - Make the project and start the enviro sever as follows.
 ```bash
