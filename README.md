@@ -50,11 +50,11 @@ Rule 3 | TCP | 127.0.0.1 | 51058    |                | 22         |
 
 - The command `esm start` uses the <u>e</u>nviro <u>s</u>etup <u>m</u>anager to start a web server from which your browser can access the ENVRIO client. 
 
-- Clone this repository:
-`https://github.com/lyen12/Final_project.git
+- Clone this repository: 
+  `git clone https://github.com/lyen12/Final_project.git`
 
 - Go into the Final Project Directory:
-`cd Final_project
+  `cd Final_project`
 
 - Make the project and start the enviro sever as follows.
 ```bash
