@@ -1,4 +1,4 @@
-# Final_project_for_EE520
+# Block Stacker
 Linda Yen
 
 Goal
@@ -24,7 +24,6 @@ Key Challenges
 - Removing all agents after the Reset button is pressed. To do this, I captured every existing agent id into a vector by sending the id as an 
   event and watching for the event in win_message.cc. Then win_message.cc watches for the Reset event and removes every agent id stored in the 
   existing_agents vector.
-- 
 
 Set Up Instructions
 ===
@@ -40,15 +39,17 @@ esm start
 
 The above commands do the following:
 
-- The `-p80:80 option maps *port* 80 from the Docker container to ports on your host computer.  
-    > If you have a MAC: This should allow you to go to http://localhost with your web browser and see the ENVIRO client. It should say "Error: Failed 
-      to fetch. Is the server running?" at this point. 
-    > If you are using Docker Toolbox on Windows: Open Virtual Box Manager -> Default (right click -> settings) -> Network -> Advanced -> Port Forwarding
-      and set the rules as below. This should allow you to go to 192.168.99.100 in your web browser and see the ENVIRO client. 
-	Name   | TCP | Host IP   | Host Port| Guest IP       | Guest Port
-	Rule 1 | TCP | 0.0.0.0   | 80       | 192.168.99.100 | 80
-	Rule 2 | TCP | 0.0.0.0   | 8765     |                | 8765
-        Rule 3 | TCP | 127.0.0.1 | 51058    |                | 22
+- The `-p80:80` option maps *port* 80 from the Docker container to ports on your host computer.
+  - If you have a MAC: This should allow you to go to http://localhost with your web browser and see the ENVIRO client. It should say "Error: Failed to fetch. Is the server running?" at this point.
+  - If you are using Docker Toolbox on Windows: Open Virtual Box Manager -> Default (right click -> settings) -> Network -> Advanced -> Port Forwarding and set the rules as below. This should allow you to go to 192.168.99.100 in your web browser and see the ENVIRO client.
+
+Name   | TCP | Host IP   | Host Port| Guest IP       | Guest Port |
+-------|-----|-----------|----------|----------------|------------|
+Rule 1 | TCP | 0.0.0.0   | 80       | 192.168.99.100 | 80         |
+-------|-----|-----------|----------|----------------|------------|
+Rule 2 | TCP | 0.0.0.0   | 8765     |                | 8765       |
+-------|-----|-----------|----------|----------------|------------|
+Rule 3 | TCP | 127.0.0.1 | 51058    |                | 22         |
 
 - The `-p8765:8765` option allows the ENVIRO client to communicate with the `enviro` server (not yet running) via a *WebSocket*.
 
